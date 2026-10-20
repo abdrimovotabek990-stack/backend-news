@@ -1,0 +1,6 @@
+.env
+to.do
+
+node_modules/
+
+uploads/
