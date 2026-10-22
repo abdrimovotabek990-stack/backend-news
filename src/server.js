@@ -2,6 +2,7 @@ import express from 'express'
 import *as dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import cokieParser from 'cookie-parser'
+import router from './routes/auth.route.js'
 
 
 
@@ -10,9 +11,8 @@ dotenv.config()
 app.use(express.json())
 app.use(cokieParser())
 
-app.get('/', (req, res) => {
-    res.send('matn')
-})
+
+app.use('/api', router)
 
 
 
