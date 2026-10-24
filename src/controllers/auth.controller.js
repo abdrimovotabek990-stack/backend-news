@@ -25,12 +25,12 @@ const login = async (req, res) => {
 
     res.cookie('accessToken', accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000,  // 15 minut ishlaydi
+      maxAge: 15 * 60 * 1000,    
     });
 
     res.cookie('refreshToken', refreshToken, {
       ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 kun ishlaydi
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
 
     return res.status(200).json({
