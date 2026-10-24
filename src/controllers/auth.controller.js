@@ -14,7 +14,7 @@ const login = async (req, res) => {
 
     const isPassword = await user.comparePassword(password);
     if (!isPassword ) {
-      return res.status(400).json({ message: " Parol noto'g'ri" });
+      return res.status(400).json({ message: "Email yoki parol noto'g'ri" });
     }
 
     const { accessToken, refreshToken } = await generateToken({
@@ -130,9 +130,43 @@ const logoutAllDevices = async (req, res) => {
   }
 };
 
+const register = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(409).json({ message: "E-mail allaqachon ro'yxatdan o'tgan" });
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.password, 12);
+
+    const newUser = new User({
+      name: name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Ro'yxatdan muvaffaqiyatli o'tdingiz",
+      user: {email: newUser.email, name: newUser.name},
+    });
+
+    
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Ro'yxatdan o'tishda xatolik yuz berdi",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   login,
   refreshToken,
   logout,
   logoutAllDevices,
+  register,
 };
