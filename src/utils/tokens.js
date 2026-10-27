@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken'
 
-const generateToken = async (user) => {
+export const generateToken = async (user) => {
   try {
     const token = {
       userId: user.userId,
@@ -20,8 +20,4 @@ const generateToken = async (user) => {
   } catch (error) {
     throw new Error(`Token yaratishda xatolik: ${error.message}`);
   }
-};
-
-module.exports = {
-  generateToken,
 };

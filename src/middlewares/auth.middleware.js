@@ -1,6 +1,7 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-const authenticate = async (req, res, next) => {
+
+export const authenticate = async (req, res, next) => {
   try {
     const token = req.cookies.accessToken;
 
@@ -9,7 +10,6 @@ const authenticate = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    req.user = decoded;
 
     const user = await User.findById(decoded.id); 
     if (!user) {
@@ -27,7 +27,7 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-const authRoles = (...roles) => {
+export const authRoles = (...roles) => {
   return async (req, res, next) => {
     try {
       if (!req.user || !roles.includes(req.user.role)) {
@@ -42,9 +42,4 @@ const authRoles = (...roles) => {
       });
     }
   };
-};
-
-module.exports = {
-  authenticate,
-  authRoles,
 };

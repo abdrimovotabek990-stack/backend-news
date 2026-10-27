@@ -1,9 +1,10 @@
-const jwt = require('jsonwebtoken');
-const { generateToken } = require('../utils/tokens');
-const { cookieOptions } = require('../config/cookie');
-const User = require('../models/user.model');
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import { generateToken } from '../utils/tokens.js'; 
+import { cookieOptions } from '../config/cookie.js'; 
+import User from '../models/user.model.js'; 
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -13,7 +14,7 @@ const login = async (req, res) => {
     }
 
     const isPassword = await user.comparePassword(password);
-    if (!isPassword ) {
+    if (!isPassword) {
       return res.status(400).json({ message: "Email yoki parol noto'g'ri" });
     }
 
@@ -48,7 +49,7 @@ const login = async (req, res) => {
   }
 };
 
-const refreshToken = async (req, res) => {
+export const refreshToken = async (req, res) => {
   try {
     const checkRefreshToken = req.cookies.refreshToken;
 
@@ -98,7 +99,7 @@ const refreshToken = async (req, res) => {
   }
 };
 
-const logout = async (req, res) => {
+export const logout = async (req, res) => {
   try {
     res.clearCookie('accessToken', cookieOptions);
     res.clearCookie('refreshToken', cookieOptions);
@@ -112,7 +113,7 @@ const logout = async (req, res) => {
   }
 };
 
-const logoutAllDevices = async (req, res) => {
+export const logoutAllDevices = async (req, res) => {
   try {
     await User.findByIdAndUpdate(req.user.userId, {
       $inc: { tokenVersion: 1 },
@@ -130,7 +131,7 @@ const logoutAllDevices = async (req, res) => {
   }
 };
 
-const register = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -147,13 +148,14 @@ const register = async (req, res) => {
       password: hashedPassword,
     });
 
+    await newUser.save();
+
     return res.status(201).json({
       success: true,
       message: "Ro'yxatdan muvaffaqiyatli o'tdingiz",
       user: {email: newUser.email, name: newUser.name},
     });
 
-    
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -161,12 +163,4 @@ const register = async (req, res) => {
       error: error.message,
     });
   }
-};
-
-module.exports = {
-  login,
-  refreshToken,
-  logout,
-  logoutAllDevices,
-  register,
 };
