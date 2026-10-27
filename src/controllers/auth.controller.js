@@ -4,6 +4,40 @@ import { generateToken } from '../utils/tokens.js';
 import { cookieOptions } from '../config/cookie.js'; 
 import User from '../models/user.model.js'; 
 
+export const register = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(409).json({ message: "E-mail allaqachon ro'yxatdan o'tgan" });
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.password, 12);
+
+    const newUser = new User({
+      name: name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Ro'yxatdan muvaffaqiyatli o'tdingiz",
+      user: {email: newUser.email, name: newUser.name},
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Ro'yxatdan o'tishda xatolik yuz berdi",
+      error: error.message,
+    });
+  }
+};
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -44,6 +78,20 @@ export const login = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Kirish jarayonida xatolik yuz berdi, itimos qaytadan urinib ko'ring",
+      error: error.message,
+    });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie('accessToken', cookieOptions);
+    res.clearCookie('refreshToken', cookieOptions);
+
+    return res.status(200).json({ message: "Tizimdan muvaffaqiyatli chiqdingiz" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Chiqishda xatolik yuz berdi, qaytadan urinib ko'ring",
       error: error.message,
     });
   }
@@ -99,68 +147,10 @@ export const refreshToken = async (req, res) => {
   }
 };
 
-export const logout = async (req, res) => {
+export const currentUser = async (req, res) => {
   try {
-    res.clearCookie('accessToken', cookieOptions);
-    res.clearCookie('refreshToken', cookieOptions);
-
-    return res.status(200).json({ message: "Tizimdan muvaffaqiyatli chiqdingiz" });
+    
   } catch (error) {
-    return res.status(500).json({
-      message: "Chiqishda xatolik yuz berdi, qaytadan urinib ko'ring",
-      error: error.message,
-    });
+    
   }
-};
-
-export const logoutAllDevices = async (req, res) => {
-  try {
-    await User.findByIdAndUpdate(req.user.userId, {
-      $inc: { tokenVersion: 1 },
-    });
-
-    res.clearCookie('accessToken', cookieOptions);
-    res.clearCookie('refreshToken', cookieOptions);
-
-    return res.status(200).json({ message: "Barcha faol tizimdan muvaffaqiyatli logout qilindi" });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Tizimdan logout qilishda xatolik yuz berdi, qaytadan urinib ko'ring",
-      error: error.message,
-    });
-  }
-};
-
-export const register = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return res.status(409).json({ message: "E-mail allaqachon ro'yxatdan o'tgan" });
-    }
-
-    const hashedPassword = await bcrypt.hash(req.body.password, 12);
-
-    const newUser = new User({
-      name: name,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-    });
-
-    await newUser.save();
-
-    return res.status(201).json({
-      success: true,
-      message: "Ro'yxatdan muvaffaqiyatli o'tdingiz",
-      user: {email: newUser.email, name: newUser.name},
-    });
-
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Ro'yxatdan o'tishda xatolik yuz berdi",
-      error: error.message,
-    });
-  }
-};
+}

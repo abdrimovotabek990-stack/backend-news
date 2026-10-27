@@ -7,11 +7,13 @@ import { login, logout, logoutAllDevices, refreshToken, register } from '../cont
 
 const router = express.Router();
 
-router.post('/login', login);
-router.post('/register', rateLimiter, register);
-router.post('/refresh', refreshToken );
-router.post('/logout', logout);
-router.post('/logout-all', authenticate, logoutAllDevices);
+router.post('/api/auth/register', rateLimiter, register);
+router.post('/api/auth/login', login);
+router.post('/api/auth/logout', logout);
+router.post('/api/auth/refresh', refreshToken );
+router.get('/api/auth/me',  )
+router.patch('/api/auth/me',)
+router.patch('/api/auth/change-password')
 
 router.get('/profile', authenticate, (req, res) => {
   res.json({ message: "Profil ma'lumotlari", user: req.user });
