@@ -3,29 +3,53 @@ import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/tokens.js'; 
 import { cookieOptions } from '../config/cookie.js'; 
 import User from '../models/user.model.js'; 
+import { loginSchema, registerSchema } from '../validators/Auth.joi.js';
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const {error, value} = registerSchema.validate(req.body, {abortEarly: false})
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if(error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details.map(mess => mess.message)
+      })
+    }
+
+    const existingUser = await User.findOne({ email: value.email });
     if (existingUser) {
       return res.status(409).json({ message: "E-mail allaqachon ro'yxatdan o'tgan" });
     }
 
-    const hashedPassword = await bcrypt.hash(req.body.password, 12);
+    const hashedPassword = await bcrypt.hash(value.password, 12);
 
     const newUser = new User({
-      name: name,
-      email: email.toLowerCase(),
+      name: value.name,
+      email: value.email,
       password: hashedPassword,
     });
 
     await newUser.save();
 
+    const { accessToken, refreshToken } = await generateToken(newUser);
+
+    res.cookie('accessToken', accessToken, {
+      ...cookieOptions,
+      maxAge: 1 * 60 * 1000,    
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+    });
+
+
+
     return res.status(201).json({
       success: true,
       message: "Ro'yxatdan muvaffaqiyatli o'tdingiz",
+      accessToken, 
+      refreshToken, 
       user: {email: newUser.email, name: newUser.name},
     });
 
@@ -40,14 +64,24 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+
+    const {error, value} = loginSchema.validate(req.body, {abortEarly: false})
+
+    if(error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details.map(mess => mess.message)
+      })
+    }
+
+    const { email, password } = value;
 
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Email yoki parol noto'g'ri" });
     }
 
-    const isPassword = await user.comparePassword(password);
+    const isPassword = await bcrypt.compare(password, user.password);
     if (!isPassword) {
       return res.status(400).json({ message: "Email yoki parol noto'g'ri" });
     }
@@ -60,7 +94,7 @@ export const login = async (req, res) => {
 
     res.cookie('accessToken', accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000,    
+      maxAge: 1 * 60 * 1000,    
     });
 
     res.cookie('refreshToken', refreshToken, {
@@ -70,6 +104,8 @@ export const login = async (req, res) => {
 
     return res.status(200).json({
       message: "Tizimga kiridingiz",
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         role: user.role,

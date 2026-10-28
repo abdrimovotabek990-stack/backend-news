@@ -12,7 +12,7 @@ app.use(express.json())
 app.use(cokieParser())
 
 
-app.use('/api', router)
+app.use('/', router)
 
 
 
