@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/tokens.js'; 
 import { cookieOptions } from '../config/cookie.js'; 
 import User from '../models/user.model.js'; 
-import { loginSchema, registerSchema } from '../validators/Auth.joi.js';
+import { changePasswordSchema, loginSchema, registerSchema, updateProfilSchema } from '../validators/Auth.joi.js';
 
 export const register = async (req, res) => {
   try {
@@ -85,16 +85,12 @@ export const login = async (req, res) => {
     if (!isPassword) {
       return res.status(400).json({ message: "Email yoki parol noto'g'ri" });
     }
-
-    const { accessToken, refreshToken } = await generateToken({
-      userId: user.userId,
-      role: user.role,
-      tokenVersion: user.tokenVersion || 0,
-    });
+    
+    const { accessToken, refreshToken } = await generateToken(user);
 
     res.cookie('accessToken', accessToken, {
       ...cookieOptions,
-      maxAge: 1 * 60 * 1000,    
+      maxAge: 15 * 60 * 1000,    
     });
 
     res.cookie('refreshToken', refreshToken, {
@@ -183,10 +179,131 @@ export const refreshToken = async (req, res) => {
   }
 };
 
-export const currentUser = async (req, res) => {
+export const updateProfil = async (req, res) => {
   try {
-    
+    const id = req.user._id;
+
+    const { error, value } = updateProfilSchema.validate(req.body, { abortEarly: false });
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details.map(mess => mess.message)
+      });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(400).json({ message: "User bazada mavjud emas" });
+    }
+
+
+    const { name: newName, email: newEmail } = value;
+
+    if (newEmail !== user.email) {
+      const existingEmailUser = await User.findOne({ email: newEmail });
+      if (existingEmailUser) {
+        return res.status(400).json({ message: "Bunday email bilan foydalanuvchi mavjud" });
+      }
+      user.email = newEmail;
+    }
+    if (newName !== user.name) {
+      user.name = newName;
+    }
+    await user.save();
+
+    const { accessToken, refreshToken } = await generateToken({
+      userId: user._id, 
+      role: user.role,
+      tokenVersion: user.tokenVersion || 0,
+    });
+
+    res.cookie('accessToken', accessToken, {
+      ...cookieOptions,
+      maxAge: 1 * 60 * 1000,    
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+    });
+
+    return res.status(200).json({
+      message: "Profil muvaffaqiyatli o'zgartirildi",
+      accessToken,
+      refreshToken,
+      user: {
+        id: user._id,
+        role: user.role,
+      },
+    });
   } catch (error) {
-    
+    return res.status(500).json({
+      message: "Profilni yangilashda xatolik yuz berdi, iltimos qaytadan urinib ko'ring",
+      error: error.message,
+    });
   }
-}
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const id = req.user._id;
+
+    const { error, value } = changePasswordSchema.validate(req.body, { abortEarly: false });
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details.map(mess => mess.message)
+      });
+    }
+
+    const { currentPassword, newPassword } = value;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(400).json({ message: "User bazada mavjud emas" });
+    }
+
+    const isCurrentPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPassword) {
+      return res.status(400).json({ message: "Joriy parol noto'g'ri" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashedPassword;
+    await user.save();
+
+
+    const { accessToken, refreshToken } = await generateToken({
+      userId: user._id, 
+      role: user.role,
+      tokenVersion: user.tokenVersion || 0,
+    });
+
+    res.cookie('accessToken', accessToken, {
+      ...cookieOptions,
+      maxAge: 1 * 60 * 1000,    
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+    });
+
+    return res.status(200).json({
+      message: "Parol muvaffaqiyatli o'zgartirildi",
+      accessToken,
+      refreshToken,
+      user: {
+        id: user._id,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Profilni yangilashda xatolik yuz berdi, iltimos qaytadan urinib ko'ring",
+      error: error.message,
+    });
+  }
+};

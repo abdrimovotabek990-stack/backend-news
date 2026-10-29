@@ -13,11 +13,13 @@ export const loginSchema = Joi.object({
 })
 
 export const updateProfilSchema = Joi.object({
-
-})
+    name: Joi.string().min(2).max(50).required(),
+    email: Joi.string().email().required(),
+}).or('name', 'email');
 
 export const changePasswordSchema = Joi.object({
-    
+    currentPassword: Joi.string().min(8).max(64).required(),
+    newPassword: Joi.string().min(8).max(64).required(),
 })
 
 export const createNewsSchema = Joi.object({
