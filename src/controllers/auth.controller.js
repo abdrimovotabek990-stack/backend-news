@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/tokens.js'; 
 import { cookieOptions } from '../config/cookie.js'; 
 import User from '../models/user.model.js'; 
-import { changePasswordSchema, loginSchema, registerSchema, updateProfilSchema } from '../validators/Auth.joi.js';
+import { changePasswordSchema, loginSchema, registerSchema, updateProfilSchema } from '../validators/auth.js';
 
 export const register = async (req, res) => {
   try {
@@ -35,7 +35,7 @@ export const register = async (req, res) => {
 
     res.cookie('accessToken', accessToken, {
       ...cookieOptions,
-      maxAge: 1 * 60 * 1000,    
+      maxAge: 15 * 60 * 1000,    
     });
 
     res.cookie('refreshToken', refreshToken, {
@@ -198,18 +198,19 @@ export const updateProfil = async (req, res) => {
     }
 
 
-    const { name: newName, email: newEmail } = value;
+    const { newName, newEmail } = value;
 
-    if (newEmail !== user.email) {
-      const existingEmailUser = await User.findOne({ email: newEmail });
-      if (existingEmailUser) {
+    if (newEmail) {
+      const existingUser = await User.findOne({ email: newEmail });
+      if (existingUser) {
         return res.status(400).json({ message: "Bunday email bilan foydalanuvchi mavjud" });
       }
       user.email = newEmail;
     }
-    if (newName !== user.name) {
+    if (newName) {
       user.name = newName;
     }
+    
     await user.save();
 
     const { accessToken, refreshToken } = await generateToken({
@@ -220,7 +221,7 @@ export const updateProfil = async (req, res) => {
 
     res.cookie('accessToken', accessToken, {
       ...cookieOptions,
-      maxAge: 1 * 60 * 1000,    
+      maxAge: 15 * 60 * 1000,    
     });
 
     res.cookie('refreshToken', refreshToken, {

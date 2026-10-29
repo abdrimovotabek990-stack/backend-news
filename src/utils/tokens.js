@@ -11,8 +11,6 @@ export const generateToken = async (user) => {
       role: user.role,
       tokenVersion: user.tokenVersion,
     };
-
-    console.log(process.env.JWT_ACCESS_SECRET);
     
     const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
       expiresIn: process.env.JWT_ACCESS_EXPIRES
