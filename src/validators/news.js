@@ -10,5 +10,5 @@ export const updateNewsSchema = Joi.object({
     description: Joi.string().min(20),
     categoryId: Joi.string(),
     tags: Joi.array().items(Joi.string()),
-    // removeImages: Joi.array().items(Joi.string()),
+    removeImages: Joi.array().items(Joi.string()),
 }) 
