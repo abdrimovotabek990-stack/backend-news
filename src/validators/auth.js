@@ -23,41 +23,10 @@ export const changePasswordSchema = Joi.object({
 })
 
 
-
-
-
-
-
-
-
-
-
-
-export const newsQuerySchema = Joi.object({
-    
-})
-export const adminNewsQuerySchema = Joi.object({
-    
-})
-
-export const categorySchema = Joi.object({
-    
-})
-
-export const tagSchema = Joi.object({
-    
-})
-
-export const rejactNewsSchema = Joi.object({
-    
-})
-export const blockUserSchema = Joi.object({
-    
-})
-
 export const ObjectIdSchema = Joi.object({
-    
+    id: Joi.string().hex().length(24)
 })
 
 
 
+    

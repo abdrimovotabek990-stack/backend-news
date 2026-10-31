@@ -37,7 +37,7 @@ export const createNews = async (req, res) => {
         const images = req.files ? req.files.map(file => ({
             url: `/uploads/news/${file.filename}`,
             filename: file.filename,
-            mimetype: file.filename,
+            mimetype: file.mimetype,
             size: file.size
         })) : [];
 

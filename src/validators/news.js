@@ -12,3 +12,8 @@ export const updateNewsSchema = Joi.object({
     tags: Joi.array().items(Joi.string()),
     removeImages: Joi.array().items(Joi.string()),
 }) 
+
+
+export const rejectNewsSchema = Joi.object({
+    reason: Joi.string().min(3).max(300)
+}) 
