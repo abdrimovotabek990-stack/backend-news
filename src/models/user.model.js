@@ -13,5 +13,5 @@ const UsersSchema = new Schema ({
     tokenVersion: {type: Number, default: 0},
 }, {timestamps: true})
 
-const Users = model('Users', UsersSchema)
-export default Users
+const User = model('Users', UsersSchema)
+export default User

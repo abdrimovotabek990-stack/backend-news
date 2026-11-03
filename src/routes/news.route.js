@@ -1,14 +1,15 @@
 import express from 'express';
+import { optionalAuth, getNewsBySlug} from '../middlewares/auth.middleware.js';
 
 
 const router = express.Router();
 
 
-router.get('/api/news', )
-router.get('/api/news/search',)
-router.get('/api/news/:slug',)
-router.post('/api/news',)
-router.patch('/api/news/:id',)
-router.delete('/api/news/:id',)
+router.get('/api/news', optionalAuth)
+router.get('/api/news/search', optionalAuth)
+router.get('/api/news/:slug', optionalAuth, getNewsBySlug)
+router.post('/api/news', optionalAuth)
+router.patch('/api/news/:id', optionalAuth)
+router.delete('/api/news/:id', optionalAuth)
 
 export default router;  

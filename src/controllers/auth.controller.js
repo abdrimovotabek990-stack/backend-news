@@ -2,8 +2,8 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/tokens.js'; 
 import { cookieOptions } from '../config/cookie.js'; 
-import User from '../models/user.model.js'; 
 import { changePasswordSchema, loginSchema, registerSchema, updateProfilSchema } from '../validators/auth.js';
+import User from '../models/User.model.js';
 
 export const register = async (req, res) => {
   try {

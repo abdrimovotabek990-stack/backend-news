@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import Users from '../models/user.model.js';
 import dotenv from 'dotenv'
+import User from '../models/User.model.js';
 
 dotenv.config()
 
@@ -17,7 +17,7 @@ export const authenticate = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
     // console.log(decoded);
     
-    const user = await Users.findById(decoded.userId); 
+    const user = await User.findById(decoded.userId); 
     
     // console.log(user);
     
