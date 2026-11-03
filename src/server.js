@@ -3,6 +3,8 @@ import *as dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import cokieParser from 'cookie-parser'
 import router from './routes/auth.route.js'
+import notFound from './middlewares/notFound.middleware.js'
+import errorHandler from './middlewares/errorHandler.middleware.js'
 
 
 
@@ -14,7 +16,8 @@ app.use(cokieParser())
 
 app.use('/', router)
 
-
+app.use(notFound)
+app.use(errorHandler)
 
 
 
