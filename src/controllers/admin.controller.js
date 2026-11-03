@@ -2,7 +2,7 @@
 
 
 
-export const getStats = async (req, res) => {
+export const getAdminStats = async (req, res) => {
     try {
 
     } catch (error) {
@@ -10,7 +10,7 @@ export const getStats = async (req, res) => {
     }
 }
 
-export const getNews = async (req, res) => {
+export const getAdminNews = async (req, res) => {
     try {
 
     } catch (error) {
@@ -18,7 +18,7 @@ export const getNews = async (req, res) => {
     }
 }
 
-export const aprroveNewsbyId = async (req, res) => {
+export const approveNews = async (req, res) => {
     try {
 
     } catch (error) {
@@ -26,7 +26,7 @@ export const aprroveNewsbyId = async (req, res) => {
     }
 }
 
-export const rejectNewsbyId = async (req, res) => {
+export const rejectNews = async (req, res) => {
     try {
 
     } catch (error) {
@@ -35,7 +35,7 @@ export const rejectNewsbyId = async (req, res) => {
 }
 
 
-export const getUsers = async (req, res) => {
+export const getAdminUsers = async (req, res) => {
     try {
 
     } catch (error) {
@@ -44,7 +44,7 @@ export const getUsers = async (req, res) => {
 }
 
 
-export const getNewsByUserId = async (req, res) => {
+export const getAdminUsersNews = async (req, res) => {
     try {
 
     } catch (error) {
@@ -52,7 +52,7 @@ export const getNewsByUserId = async (req, res) => {
     }   
 }
 
-export const blockUserById = async (req, res) => {
+export const blockUser = async (req, res) => {
     try {
 
     } catch (error) {
@@ -60,7 +60,7 @@ export const blockUserById = async (req, res) => {
     }   
 }
 
-export const unblockUserById = async (req, res) => {
+export const unblockUser = async (req, res) => {
     try {
 
     } catch (error) {
@@ -79,7 +79,7 @@ export const createCategory = async (req, res) => {
 }
 
 
-export const updateCategoryById = async (req, res) => {
+export const updateCategory = async (req, res) => {
     try {
 
     } catch (error) {
@@ -88,7 +88,7 @@ export const updateCategoryById = async (req, res) => {
 }
 
 
-export const deleteCategoryById = async (req, res) => {
+export const deleteCategory = async (req, res) => {
     try {
 
     } catch (error) {
