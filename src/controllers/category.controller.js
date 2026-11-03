@@ -43,3 +43,14 @@ export const updateNews = async (req, res) => {
     });
   }
 };
+
+
+
+export const getCategories = async (req, res) => {
+    try {
+
+    } catch (error) {
+        res.status(500).json({ message: 'Kategoriyalarni olishda xatolik yuz berdi' });
+    }
+}
+
