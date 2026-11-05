@@ -1,4 +1,4 @@
-import { date } from "joi";
+import slugify from 'slugify';
 import Category from "../models/categories.model";
 import News from "../models/news.model";
 import User from "../models/User.model";
@@ -374,7 +374,44 @@ export const createCategory = asyncHandler(async (req, res) => {
 
 export const updateCategory = asyncHandler(async (req, res) => {
     try {
+        const { id } = req.params;
+        const { name, description } = req.body;
 
+        const category = await Category.findById(id);
+        if (!category) {
+            throw new ApiError(404, 'Kategoriya topilmadi');
+        }
+
+        if (name && name.trim() !== category.name) {
+            const trimmedName = name.trim();
+            const existingCategory = await Category.findOne({ name: trimmedName, _id: { $ne: id } });   
+
+            if (existingCategory) {
+                throw new ApiError(409, 'Ushbu nomdagi kategoriya oldindan mavjud');
+            }
+        }
+
+        let slug = slugify(trimmedName, { lower: true, strict: true });
+        const slugExists = await Category.findOne({ slug, _id: { $ne: id } });
+        if (slugExists) {
+            const randomNum = Math.random().toString(36).substring(2, 6);
+            slug = `${slug}-${randomNum}`;
+        }
+
+        category.name = trimmedName;
+        category.slug = slug;
+
+        if (description !== undefined) {
+            category.description = description ? description.trim() : '';
+        }
+
+        await category.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Kategoriya yangilandi',
+            data: category
+        });
     } catch (error) {
         res.status(500).json({ message: 'Kategoriya yangilashda xatolik yuz berdi' });
     }   
