@@ -6,7 +6,7 @@ import ApiError from "../utils/ApiError.utils";
 import { asyncHandler } from "../utils/asyncHandler.utils";
 
 
-
+// DASHBOARD 
 
 export const getAdminStats = asyncHandler(async (req, res) => {
     try {
@@ -33,6 +33,8 @@ export const getAdminStats = asyncHandler(async (req, res) => {
     }
 })
 
+
+// NEWS - YANGILIKLAR
 export const getAdminNews = asyncHandler(async (req, res) => {
     try {
         const {page = 1, limit = 10, status, category, q, sort = 'newest'} = req.query;
@@ -149,7 +151,7 @@ export const rejectNews = asyncHandler(async (req, res) => {
     }
 })
 
-
+//  USERLAR
 export const getAdminUsers = asyncHandler(async (req, res) => {
     try {
         const {
@@ -201,12 +203,55 @@ export const getAdminUsers = asyncHandler(async (req, res) => {
 
 export const getAdminUsersNews = asyncHandler(async (req, res) => {
     try {
+        const { id } = req.params;
+        const { page = 1, limit = 10, status, sort = 'newest' } = req.query;
 
+        const user = await User.findById(id);
+        if (!user) {
+            throw new ApiError(404, 'Foydalanuvchi topilmadi');
+        }
+
+        const pageNum = Math.max(1, parseInt(page, 10) || 1);
+        const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+        const skip = (pageNum - 1) * limitNum;
+
+        const filter = { author: user._id };
+        if (status) {
+            filter.status = status;
+        }
+
+        const sortOptions = sort === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
+
+        const [news, totalNews] = await Promise.all([
+            News.find(filter)
+                .populate('author', 'name')
+                .populate('tags', 'name slug')
+                .sort(sortOptions)
+                .skip(skip)
+                .limit(limitNum),
+                lean(),
+            News.countDocuments(filter)
+        ]);
+
+        const totalPages = Math.ceil(totalNews / limitNum) || 1;
+
+        res.status(200).json({
+            success: true,
+            data: news,
+            meta: {
+                page: pageNum,
+                limit: limitNum,
+                totalNews,
+                totalPages
+            }
+        });
     } catch (error) {
         res.status(500).json({ message: 'Foydalanuvchining yangiliklarini olishda xatolik yuz berdi' });
     }   
 })
 
+
+// USERLARNI BLOKLASH VA BLOKDAN CHIQARISH
 export const blockUser =asyncHandler (async (req, res) => {
     try {
 
@@ -224,7 +269,7 @@ export const unblockUser = asyncHandler(async (req, res) => {
 })
 
 
-
+//  CATIGORIYALAR 
 export const createCategory = asyncHandler(async (req, res) => {
     try {
 
@@ -252,7 +297,7 @@ export const deleteCategory = asyncHandler(async (req, res) => {
 })
 
 
-
+//  TAGLAR
 export const createTags = asyncHandler(async (req, res) => {
     try {
 
