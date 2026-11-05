@@ -1,3 +1,4 @@
+import Category from "../models/categories.model";
 import News from "../models/news.model";
 import User from "../models/User.model";
 import { asyncHandler } from "../utils/asyncHandler.utils";
@@ -32,6 +33,58 @@ export const getAdminStats = asyncHandler(async (req, res) => {
 
 export const getAdminNews = asyncHandler(async (req, res) => {
     try {
+        const {page = 1, limit = 10, status, category, q, sort = 'newest'} = req.query;
+
+        const pageNum = Math.max(1, parseInt(page, 10 || 1));
+        const limitNum = Math.max(50, Math.max(parseInt(limit, 10 || 10)));
+        const skip = (pageNum - 1) * limitNum;
+        
+        const filter = {};
+        if (status) {
+            filter.status = status;
+        }
+
+        if (category) {
+            const categoryData = await Category.findOne({ slug: category });
+            if (categoryData) {
+                filter.category = categoryData._id;
+            }else {
+                filter.category = category;
+            }
+        }
+
+        if (q) {
+            filter.$text = { $search: q };
+        }
+
+        const sortOptions = sort === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
+        
+
+        const [news, totalNews] = await Promise.all([
+            News.find(filter)
+                .populate('author', 'name')
+                .populate('category', 'name slug')
+                .populate('tags', 'name slug')
+                .sort(sortOptions)
+                .skip(skip)
+                .limit(limitNum),
+            News.countDocuments(filter)
+        ]);
+
+        const totalPages = Math.ceil(totalNews / limitNum) || 1;
+
+        res.status(200).json({
+            success: true,
+            message: 'Admin yangiliklar ro\'yxati',
+            data: news,
+            meta: {
+                page: pageNum,
+                limit: limitNum,
+                totalNews,
+                totalPages,
+            },
+        });
+
 
     } catch (error) {
         res.status(500).json({ message: 'Yangiliklarni olishda xatolik yuz berdi' });
