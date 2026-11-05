@@ -420,7 +420,25 @@ export const updateCategory = asyncHandler(async (req, res) => {
 
 export const deleteCategory = asyncHandler(async (req, res) => {
     try {
+        const { id } = req.params;
 
+        const category = await Category.findById(id);
+        if (!category) {
+            throw new ApiError(404, 'Kategoriya topilmadi');
+        }
+
+        const newsCount = await News.countDocuments({ category: id });
+        if (newsCount > 0) {
+            throw new ApiError(400, 'Bu kategoriyada yangiliklar mavjud bo\'lganligi sababli uni o\'chirish mumkin emas');
+        }
+
+        await category.remove();
+
+        res.status(200).json({
+            success: true,
+            message: 'Kategoriya o\'chirildi',
+            data: category
+        });
     } catch (error) {
         res.status(500).json({ message: 'Kategoriya o\'chirishda xatolik yuz berdi' });
     }
