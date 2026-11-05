@@ -1,3 +1,4 @@
+import { date } from "joi";
 import Category from "../models/categories.model";
 import News from "../models/news.model";
 import User from "../models/User.model";
@@ -98,7 +99,7 @@ export const approveNews = asyncHandler(async (req, res) => {
         const news = await News.findById(id);
 
         if (!news) {
-            throw new ApiError('Yangilik topilmadi');
+            throw new ApiError(404,'Yangilik topilmadi');
         }
 
         news.status = 'PUBLISHED';
@@ -121,7 +122,28 @@ export const approveNews = asyncHandler(async (req, res) => {
 
 export const rejectNews = asyncHandler(async (req, res) => {
     try {
+        const { id } = req.params;
+        const { reason } = req.body;
 
+        const news = await News.findById(id);
+
+        if (!news) {
+            throw new ApiError(404, 'Yangilik topilmadi');
+        }
+
+        news.status = 'REJECTED';
+        news.rejectReason = reason || 'Sabab yozilmagan';
+        news.reviewedBy = req.user._id;
+        news.reviewedAt = new Date();
+
+        await news.save()
+
+        res.status(200).json({
+            success: true,
+            message: 'Yangilik rad qilindi',
+            data: news
+        })
+        
     } catch (error) {
         res.status(500).json({ message: 'Yangilikni rad etishda xatolik yuz berdi' });
     }
