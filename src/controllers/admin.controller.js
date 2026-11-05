@@ -1,6 +1,7 @@
 import Category from "../models/categories.model";
 import News from "../models/news.model";
 import User from "../models/User.model";
+import ApiError from "../utils/ApiError.utils";
 import { asyncHandler } from "../utils/asyncHandler.utils";
 
 
@@ -93,7 +94,26 @@ export const getAdminNews = asyncHandler(async (req, res) => {
 
 export const approveNews = asyncHandler(async (req, res) => {
     try {
+        const { id } = req.params;
+        const news = await News.findById(id);
 
+        if (!news) {
+            throw new ApiError('Yangilik topilmadi');
+        }
+
+        news.status = 'PUBLISHED';
+        news.reviewedBy = req.user._id;
+        news.reviewedAt = new Date();
+        news.publishedAt = news.publishedAt || new Date();
+        news.rejectReason = undefined;
+
+        await news.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Yangilik tasdiqlandi',
+            data: news
+        });
     } catch (error) {
         res.status(500).json({ message: 'Yangilikni tasdiqlashda xatolik yuz berdi' });
     }
