@@ -304,7 +304,35 @@ export const blockUser =asyncHandler (async (req, res) => {
 
 export const unblockUser = asyncHandler(async (req, res) => {
     try {
+        const { id } = req.params;
 
+        const user = await User.findById(id);
+        if (!user) {
+            throw new ApiError(404, 'Foydalanuvchi topilmadi');
+        }
+
+        if (!user.isBlocked) {
+            throw new ApiError(400, 'Foydalanuvchi bloklanmagan');
+        }
+
+        user.isBlocked = false;
+        user.blockReason = undefined;
+        user.blockedAt = undefined;
+        user.blockedBy = undefined;
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Foydalanuvchi blokdan chiqarildi',
+            data: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                isBlocked: user.isBlocked,
+            }
+        });
     } catch (error) {
         res.status(500).json({ message: 'Foydalanuvchini blokdan chiqarishda xatolik yuz berdi' });
     }
@@ -314,7 +342,30 @@ export const unblockUser = asyncHandler(async (req, res) => {
 //  CATIGORIYALAR 
 export const createCategory = asyncHandler(async (req, res) => {
     try {
+        const { name, description } = req.body;
 
+        const existingCategory = await Category.findOne({ name: name.trim() });
+
+        if (existingCategory) {
+            throw new ApiError(409, 'Ushbu nomdagi kategoriya oldindan mavjud');
+        }
+
+        let slug = slugify(name, { lower: true, strict: true }); 
+
+        const slugExists = await Category.findOne({ slug });
+        if (slugExists) {
+            const randomNum = Math.random().toString(36).substring(2, 6);
+            slug = `${slug}-${randomNum}`;
+        }
+
+        
+        const category = await Category.create({ name: name.trim(), slug, description: description ? description.trim() : undefined });
+
+        res.status(201).json({
+            success: true,
+            message: 'Kategoriya yaratildi',
+            data: category
+        });
     } catch (error) {
         res.status(500).json({ message: 'Kategoriya yaratishda xatolik yuz berdi' });
     }   
