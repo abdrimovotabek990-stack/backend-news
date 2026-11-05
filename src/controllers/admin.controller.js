@@ -279,7 +279,7 @@ export const blockUser =asyncHandler (async (req, res) => {
         user.blockReason = reason || 'Sabab yozilmagan';
         user.blockedAt = new Date();
         user.blockedBy = req.user._id;
-        user.tokenVersion += 1;
+        user.tokenVersion = (user.tokenVersion || 0) + 1;
 
         await user.save();
 
