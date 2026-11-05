@@ -254,7 +254,49 @@ export const getAdminUsersNews = asyncHandler(async (req, res) => {
 // USERLARNI BLOKLASH VA BLOKDAN CHIQARISH
 export const blockUser =asyncHandler (async (req, res) => {
     try {
+        const { id } = req.params;
+        const {reason} = req.body;
 
+        if (req.user._id.toString() === id) {
+            throw new ApiError(400, 'Admin o\'zini o\'zi bloklay olmaydi');
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            throw new ApiError(404, 'Foydalanuvchi topilmadi');
+        }
+
+        if (user.role === 'ADMIN') {
+            throw new ApiError(403, 'Admin akkountini bloklash mumkin emas');
+        }
+
+        if (user.isBlocked) {
+            throw new ApiError(400, 'Foydalanuvchi allaqachon bloklangan');
+        }
+
+
+        user.isBlocked = true;
+        user.blockReason = reason || 'Sabab yozilmagan';
+        user.blockedAt = new Date();
+        user.blockedBy = req.user._id;
+        user.tokenVersion += 1;
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Foydalanuvchi bloklandi',
+            data: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                isBlocked: user.isBlocked,
+                blockReason: user.blockReason,
+                blockedAt: user.blockedAt,
+                blockedBy: user.blockedBy,
+            }
+        });
     } catch (error) {
         res.status(500).json({ message: 'Foydalanuvchini bloklashda xatolik yuz berdi' });
     }   
