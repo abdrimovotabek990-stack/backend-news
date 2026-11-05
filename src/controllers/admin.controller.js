@@ -143,7 +143,7 @@ export const rejectNews = asyncHandler(async (req, res) => {
             message: 'Yangilik rad qilindi',
             data: news
         })
-        
+
     } catch (error) {
         res.status(500).json({ message: 'Yangilikni rad etishda xatolik yuz berdi' });
     }
@@ -152,7 +152,47 @@ export const rejectNews = asyncHandler(async (req, res) => {
 
 export const getAdminUsers = asyncHandler(async (req, res) => {
     try {
+        const {
+            page = 1,
+            limit =10,
+            search,
+            isBlocked
+        } = req.query
 
+        const pageNum = Math.max(1, parseInt(page, 10) || 1);
+        const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+        const skip = (pageNum - 1) * limitNum;
+
+        const filter = {}
+
+        if (isBlocked !== undefined) {
+            filter.isBlocked = isBlocked === 'true';
+        }
+
+        if (search) {
+            filter.$or = [
+                {name: {$regex: search, $options: 'i'}},
+                {email: {$regex: search, $options: 'i'}}
+            ]
+        }
+
+        const [users, userTolal] = await Promise.all([
+            User.find(filter).select('-password').sort({createdAt: -1}).skip(skip).limit(limitNum).lean(),
+            User.countDocuments(filter)
+        ])
+
+        const totalPages = Math.ceil(userTolal / limitNum) || 1;
+
+        res.status(200).json({
+            success: true,
+            data: users,
+            meta: {
+                page: pageNum,
+                limit: limitNum,
+                totalUsers: userTolal,
+                totalPages
+            }
+        })
     } catch (error) {
         res.status(500).json({ message: 'Foydalanuvchilarni olishda xatolik yuz berdi' });
     }
