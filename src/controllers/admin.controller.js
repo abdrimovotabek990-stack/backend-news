@@ -4,6 +4,7 @@ import News from "../models/news.model";
 import User from "../models/User.model";
 import ApiError from "../utils/ApiError.utils";
 import { asyncHandler } from "../utils/asyncHandler.utils";
+import Tag from '../models/tags.model';
 
 
 // DASHBOARD 
@@ -448,7 +449,19 @@ export const deleteCategory = asyncHandler(async (req, res) => {
 //  TAGLAR
 export const createTags = asyncHandler(async (req, res) => {
     try {
+        const { name } = req.body;
 
+        const existingTag = await Tag.findOne({ name: name.trim() });
+        if (existingTag) {
+            throw new ApiError(409, 'Ushbu nomdagi teg oldindan mavjud');
+        }
+
+        const tag = await Tag.create({ name: name.trim() });
+        res.status(201).json({
+            success: true,
+            message: 'Teg yaratildi',
+            data: tag
+        });
     } catch (error) {
         res.status(500).json({ message: 'Teg yaratishda xatolik yuz berdi' });
     }   
@@ -457,7 +470,27 @@ export const createTags = asyncHandler(async (req, res) => {
 
 export const updateTagsById = asyncHandler(async (req, res) => {
     try {
+        const { id } = req.params;
+        const { name } = req.body;
 
+        const tag = await Tag.findById(id);
+        if (!tag) {
+            throw new ApiError(404, 'Teg topilmadi');
+        }
+
+        const existingTag = await Tag.findOne({ name: name.trim(), _id: { $ne: id } });
+        if (existingTag) {
+            throw new ApiError(409, 'Ushbu nomdagi teg oldindan mavjud');
+        }
+
+        tag.name = name.trim();
+        await tag.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Teg yangilandi',
+            data: tag
+        });
     } catch (error) {
         res.status(500).json({ message: 'Teg yangilashda xatolik yuz berdi' });
     }   
@@ -466,7 +499,20 @@ export const updateTagsById = asyncHandler(async (req, res) => {
 
 export const deleteTagsById = asyncHandler(async (req, res) => {
     try {
+        const { id } = req.params;
 
+        const tag = await Tag.findById(id);
+        if (!tag) {
+            throw new ApiError(404, 'Teg topilmadi');
+        }
+
+        await tag.remove();
+
+        res.status(200).json({
+            success: true,
+            message: 'Teg o\'chirildi',
+            data: tag
+        });
     } catch (error) {
         res.status(500).json({ message: 'Teg o\'chirishda xatolik yuz berdi' });
     }

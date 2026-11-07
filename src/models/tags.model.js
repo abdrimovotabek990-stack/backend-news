@@ -6,5 +6,5 @@ const TagsSchema = new Schema ({
     slug: {type: String, unique: true},
 }, {timestamps: true})
 
-const Tags = model('Tags', TagsSchema)
-export default Tags
+const Tag = model('Tag', TagsSchema)
+export default Tag
