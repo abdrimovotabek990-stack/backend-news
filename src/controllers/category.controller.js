@@ -99,3 +99,30 @@ export const deleteCategory = asyncHandler(async (req, res) => {
             data: category
         });
 })
+
+export const getAllCategories = asyncHandler(async(req, res) => {
+    const categories = (await Category.find()).toSorted({ created: -1})
+
+    res.status(200).json({
+        success: true,
+        message: " Kategoriyalar ro'yhati",
+        data: categories
+    })
+})
+
+export const getOneCategory = asyncHandler(async(req, res) => {
+    const {id} = req.params
+
+    const category = await Category.findById(id)
+
+    if (!category) {
+        throw new ApiError(404, "Kategoriya topilmadii")
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Kategoriya topildi",
+        data: category
+    })
+})
+

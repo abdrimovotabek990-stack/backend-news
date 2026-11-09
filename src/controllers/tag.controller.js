@@ -13,6 +13,22 @@ export const getTags = asyncHandler(async(req, res) => {
     })
 })
 
+export const getOneTag = asyncHandler(async(req, res) => {
+    const {id} =req.params
+
+    const tag = await Tag.findById(id)
+
+    if(!tag) {
+        throw new ApiError(404, "Teg topilmadi")
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Teg olindi",
+        data: tag
+    })
+})
+
 export const createTags = asyncHandler(async (req, res) => {
 
         const { name } = req.body;
