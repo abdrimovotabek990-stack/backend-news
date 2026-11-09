@@ -7,4 +7,5 @@ const TagsSchema = new Schema ({
 }, {timestamps: true})
 
 const Tag = model('Tag', TagsSchema)
+
 export default Tag

@@ -5,7 +5,7 @@ import cokieParser from 'cookie-parser'
 
 import authRouter from './routes/auth.route.js'
 import categoryRouter from './routes/category.route.js'
-
+import tagsRouter from './routes/tag.route.js'
 
 import notFound from './middlewares/notFound.middleware.js'
 import errorHandler from './middlewares/errorHandler.middleware.js'
@@ -20,6 +20,7 @@ app.use(cokieParser())
 
 app.use('/', authRouter)
 app.use('/', categoryRouter)
+app.use('/', tagsRouter)
 
 app.use(notFound)
 app.use(errorHandler)
