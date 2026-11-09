@@ -13,7 +13,6 @@ router.post('/api/auth/logout', logout);
 router.post('/api/auth/refresh', refreshToken );
 router.patch('/api/auth/change-password',authenticate, changePassword)
 router.patch('/api/auth/updateProfile', authenticate, updateProfil);
-// router.get('/api/auth/me')
 
 router.get('/profile', authenticate, (req, res) => {
   res.json({ message: "Profil ma'lumotlari", user: req.user });

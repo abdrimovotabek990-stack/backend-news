@@ -2,7 +2,11 @@ import express from 'express'
 import *as dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import cokieParser from 'cookie-parser'
-import router from './routes/auth.route.js'
+
+import authRouter from './routes/auth.route.js'
+import categoryRouter from './routes/category.route.js'
+
+
 import notFound from './middlewares/notFound.middleware.js'
 import errorHandler from './middlewares/errorHandler.middleware.js'
 
@@ -14,7 +18,8 @@ app.use(express.json())
 app.use(cokieParser())
 
 
-app.use('/', router)
+app.use('/', authRouter)
+app.use('/', categoryRouter)
 
 app.use(notFound)
 app.use(errorHandler)

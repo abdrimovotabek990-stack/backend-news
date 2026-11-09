@@ -1,16 +1,19 @@
-import Category from "../models/categories.model";
-import { asyncHandler } from "../utils/asyncHandler.utils";
+import Category from "../models/categories.model.js";
+import ApiError from "../utils/ApiError.utils.js";
+import { asyncHandler } from "../utils/asyncHandler.utils.js";
+import slugify from 'slugify'
+
 
 //  CATIGORIYALAR 
 export const createCategory = asyncHandler(async (req, res) => {
-    try {
         const { name, description } = req.body;
 
-        const existingCategory = await Category.findOne({ name: name.trim() });
-
+        const existingCategory = await Category.findOne({ name: name.trim() });    
+        
         if (existingCategory) {
-            throw new ApiError(409, 'Ushbu nomdagi kategoriya oldindan mavjud');
+            throw new ApiError(409, "Allaqachon mavjud")
         }
+
 
         let slug = slugify(name, { lower: true, strict: true }); 
 
@@ -27,15 +30,11 @@ export const createCategory = asyncHandler(async (req, res) => {
             success: true,
             message: 'Kategoriya yaratildi',
             data: category
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Kategoriya yaratishda xatolik yuz berdi' });
-    }   
+        });  
 })
 
 
 export const updateCategory = asyncHandler(async (req, res) => {
-    try {
         const { id } = req.params;
         const { name, description } = req.body;
 
@@ -73,15 +72,12 @@ export const updateCategory = asyncHandler(async (req, res) => {
             success: true,
             message: 'Kategoriya yangilandi',
             data: category
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Kategoriya yangilashda xatolik yuz berdi' });
-    }   
+        }); 
 })
 
 
 export const deleteCategory = asyncHandler(async (req, res) => {
-    try {
+
         const { id } = req.params;
 
         const category = await Category.findById(id);
@@ -101,7 +97,4 @@ export const deleteCategory = asyncHandler(async (req, res) => {
             message: 'Kategoriya o\'chirildi',
             data: category
         });
-    } catch (error) {
-        res.status(500).json({ message: 'Kategoriya o\'chirishda xatolik yuz berdi' });
-    }
 })

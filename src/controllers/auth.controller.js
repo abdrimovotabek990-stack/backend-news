@@ -4,6 +4,7 @@ import { generateToken } from '../utils/tokens.js';
 import { cookieOptions } from '../config/cookie.js'; 
 import { changePasswordSchema, loginSchema, registerSchema, updateProfilSchema } from '../validators/auth.js';
 import User from '../models/User.model.js';
+import ApiError from '../utils/ApiError.utils.js';
 
 export const register = async (req, res) => {
   try {
@@ -78,7 +79,7 @@ export const login = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "Email yoki parol noto'g'ri" });
+       throw new ApiError(409, "Email yoki parol noto'g'ri");
     }
 
     const isPassword = await bcrypt.compare(password, user.password);
