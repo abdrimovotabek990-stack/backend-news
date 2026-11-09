@@ -101,7 +101,7 @@ export const deleteCategory = asyncHandler(async (req, res) => {
 })
 
 export const getAllCategories = asyncHandler(async(req, res) => {
-    const categories = (await Category.find()).toSorted({ created: -1})
+    const categories = await Category.find().sort({ created: -1})
 
     res.status(200).json({
         success: true,
