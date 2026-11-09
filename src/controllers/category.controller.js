@@ -1,4 +1,5 @@
 import Category from "../models/categories.model.js";
+import News from "../models/news.model.js";
 import ApiError from "../utils/ApiError.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import slugify from 'slugify'
@@ -43,8 +44,8 @@ export const updateCategory = asyncHandler(async (req, res) => {
             throw new ApiError(404, 'Kategoriya topilmadi');
         }
 
+        const trimmedName = name.trim();
         if (name && name.trim() !== category.name) {
-            const trimmedName = name.trim();
             const existingCategory = await Category.findOne({ name: trimmedName, _id: { $ne: id } });   
 
             if (existingCategory) {
@@ -90,7 +91,7 @@ export const deleteCategory = asyncHandler(async (req, res) => {
             throw new ApiError(400, 'Bu kategoriyada yangiliklar mavjud bo\'lganligi sababli uni o\'chirish mumkin emas');
         }
 
-        await category.remove();
+        await category.deleteOne();
 
         res.status(200).json({
             success: true,

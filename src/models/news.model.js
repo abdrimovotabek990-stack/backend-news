@@ -17,7 +17,10 @@ const newsSchema = new Schema ({
     images: {type: [imageSchema], default: [], validate: [arr => arr.length <= 10, '10 tagacha rasm yuklay olasz ']},
     category: {type: Schema.Types.ObjectId, ref: 'Categories', required: true, index: true}, 
     author: {type: Schema.Types.ObjectId, ref: 'Users', required: true, index: true},
-    tags: [{type: Schema.Types.ObjectId, ref: 'Tag', required: true}], default: [], validate: [arr => arr.length <= 10, '10 tagacha teg qo\'shishingiz mumkin'],
+    tags: {
+        type: [{type: Schema.Types.ObjectId, ref: 'Tag', required: true}], 
+        default: [], 
+        validate: [arr => arr.length <= 10, '10 tagacha teg qo\'shishingiz mumkin']},
     status: {type: String, enum: ['PENDING', 'PUBLISHED', 'REJECTED'], default: 'PENDING'},
     rejectReason: {type: String,maxlength: 300, default: null},
     reviewedBy: {type: Schema.Types.ObjectId, ref: 'Users', default: null},
