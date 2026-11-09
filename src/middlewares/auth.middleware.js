@@ -36,14 +36,14 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
-export const authRoles = (...roles) => {
+
+export const authorize = (...roles) => {
   return async (req, res, next) => {
     try {
       if (!req.user || !roles.includes(req.user.role)) {
-        return res.status(403).json({ message: "Sizda bu amal uchun ruxsat yo'q" });
+        return next(new ApiError(403, "Bu amalni bajarish uchun sizda ruxsat yo'q"));
       }
-
-      return next();
+      next();
     } catch (error) {
       return res.status(500).json({
         message: "Kirish qismida xatolik yuz berdi yani siz avtorizatsiya o'tmagansiz",
@@ -52,3 +52,4 @@ export const authRoles = (...roles) => {
     }
   };
 };
+
