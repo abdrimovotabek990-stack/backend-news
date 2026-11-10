@@ -1,3 +1,4 @@
+import slugify from 'slugify'
 import Tag from "../models/tags.model.js";
 import ApiError from "../utils/ApiError.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
@@ -32,13 +33,17 @@ export const getOneTag = asyncHandler(async(req, res) => {
 export const createTags = asyncHandler(async (req, res) => {
 
         const { name } = req.body;
+        const trimmedName = name.trim()
 
-        const existingTag = await Tag.findOne({ name: name.trim() });
+        const tagSlug = slugify(trimmedName, {lower: true, strict: true})
+
+        const existingTag = await Tag.findOne({ name: trimmedName} || {slug: tagSlug}
+        );
         if (existingTag) {
             throw new ApiError(409, 'Ushbu nomdagi teg oldindan mavjud');
         }
 
-        const tag = await Tag.create({ name: name.trim() });
+        const tag = await Tag.create({ name: name.trim(), slug: tagSlug });
         res.status(201).json({
             success: true,
             message: 'Teg yaratildi',

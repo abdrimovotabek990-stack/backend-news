@@ -80,7 +80,7 @@ export const getAdminNews = asyncHandler(async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Admin yangiliklar ro\'yxati',
+            message: 'User yaratgan yangiliklar ro\'yxati',
             data: news,
             meta: {
                 page: pageNum,
