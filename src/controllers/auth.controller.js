@@ -99,6 +99,8 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
 
+    // console.log(generateToken.tokenVersion);
+    
     return res.status(200).json({
       message: "Tizimga kiridingiz",
       accessToken,
@@ -108,6 +110,7 @@ export const login = async (req, res) => {
         role: user.role,
       },
     });
+    
   } catch (error) {
     return res.status(500).json({
       message: "Kirish jarayonida xatolik yuz berdi, itimos qaytadan urinib ko'ring",
@@ -155,11 +158,7 @@ export const refreshToken = async (req, res) => {
       return res.status(401).json({ message: "Token yaroqsizlig uchun bekor qilingan, qaytadan kiring" });
     }
 
-    const tokens = await generateToken({
-      userId: user.userId,
-      role: user.role,
-      tokenVersion: user.tokenVersion,
-    });
+    const tokens = await generateToken(user)
 
     res.cookie('accessToken', tokens.accessToken, {
       ...cookieOptions,
@@ -213,23 +212,19 @@ export const updateProfil = async (req, res) => {
     }
     
     await user.save();
-
-    const { accessToken, refreshToken } = await generateToken({
-      userId: user._id, 
-      role: user.role,
-      tokenVersion: user.tokenVersion || 0,
-    });
-
+    
+    const { accessToken, refreshToken } = await generateToken(user);
+    
     res.cookie('accessToken', accessToken, {
       ...cookieOptions,
       maxAge: 15 * 60 * 1000,    
     });
-
+    
     res.cookie('refreshToken', refreshToken, {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
-
+    
     return res.status(200).json({
       message: "Profil muvaffaqiyatli o'zgartirildi",
       accessToken,
@@ -274,14 +269,11 @@ export const changePassword = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
     user.password = hashedPassword;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
 
 
-    const { accessToken, refreshToken } = await generateToken({
-      userId: user._id, 
-      role: user.role,
-      tokenVersion: user.tokenVersion || 0,
-    });
+    const { accessToken, refreshToken } = await generateToken(user)
 
     res.cookie('accessToken', accessToken, {
       ...cookieOptions,
@@ -309,3 +301,24 @@ export const changePassword = async (req, res) => {
     });
   }
 };
+
+export const getProfil = async(req, res) => {
+  try {
+    if(!req.user){
+      return res.status(401).json({
+        message: "Avtorizatsiyadan o'tmagan"
+      })
+    }
+    const { password, ...userData } = req.user.toObject();
+
+    return res.status(200).json({
+      message: "Profil ma'lumotlari",
+      user: userData,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Profil malumotlarini olishda xatolik yuz berdi, iltimos qaytadan urinib ko'ring",
+      error: error.message,
+    });
+  }
+}
