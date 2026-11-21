@@ -34,7 +34,6 @@ export const getAdminStats = asyncHandler(async (req, res) => {
     }
 })
 
-
 // NEWS - YANGILIKLAR
 export const getAdminNews = asyncHandler(async (req, res) => {
     try {

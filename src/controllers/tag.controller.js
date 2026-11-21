@@ -46,7 +46,6 @@ export const createTags = asyncHandler(async (req, res) => {
         });  
 })
 
-
 export const updateTagsById = asyncHandler(async (req, res) => {
         const { id } = req.params;
         const { name } = req.body;
@@ -70,7 +69,6 @@ export const updateTagsById = asyncHandler(async (req, res) => {
             data: tag
         });  
 })
-
 
 export const deleteTagsById = asyncHandler(async (req, res) => {
         const { id } = req.params;

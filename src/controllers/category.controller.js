@@ -34,7 +34,6 @@ export const createCategory = asyncHandler(async (req, res) => {
         });  
 })
 
-
 export const updateCategory = asyncHandler(async (req, res) => {
         const { id } = req.params;
         const { name, description } = req.body;
@@ -75,7 +74,6 @@ export const updateCategory = asyncHandler(async (req, res) => {
             data: category
         }); 
 })
-
 
 export const deleteCategory = asyncHandler(async (req, res) => {
 

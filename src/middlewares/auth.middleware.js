@@ -1,55 +1,67 @@
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv'
 import User from '../models/User.model.js';
+import ApiError from '../utils/ApiError.utils.js';
 
-dotenv.config()
 
 export const authenticate = async (req, res, next) => {
   try {
-    // console.log(req.cookies.accessToken);
-    
-    const token = req.cookies.accessToken;
+    const token = req.cookies?.accessToken;
 
     if (!token) {
-      return res.status(401).json({ message: 'Token topilmadi' });
+      return next(new ApiError(401, 'Token topilmadi, Qayta tizimga kiring'));
     }
 
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-    // console.log(decoded);
-    
-    const user = await User.findById(decoded.userId); 
-    
-    // console.log(user);
-    
+    const user = await User.findById(decoded.userId);
+
     if (!user) {
-      return res.status(401).json({ message: 'Foydalanuvchi tizimda yoq' });
+      return next(new ApiError(401, 'Foydalanuvchi tizimda topilmadi'));
+    }
+
+    if (decoded.tokenVersion !== user.tokenVersion) {
+      return next(new ApiError(401, 'Sessiya bekor qilingan, qayta tizimga kiring'));
     }
 
     req.user = user;
-
     return next();
   } catch (error) {
-    return res.status(401).json({
-      message: "Token muddati tugagan yoki yaroqsiz",
-      error: error.message,
-    });
+    return next(new ApiError(401, 'Token muddati tugagan yoki yaroqsiz'));
   }
 };
 
-
-export const authorize = (...roles) => {
-  return async (req, res, next) => {
-    try {
-      if (!req.user || !roles.includes(req.user.role)) {
-        return next(new ApiError(403, "Bu amalni bajarish uchun sizda ruxsat yo'q"));
-      }
-      next();
-    } catch (error) {
-      return res.status(500).json({
-        message: "Kirish qismida xatolik yuz berdi yani siz avtorizatsiya o'tmagansiz",
-        error: error.message,
-      });
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const token = req.cookies?.accessToken;
+    if (!token) {
+      return next();
     }
-  };
+
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    const user = await User.findById(decoded.userId);
+
+    if (user && decoded.tokenVersion === user.tokenVersion && !user.isBlocked) {
+      req.user = user;
+    }
+
+    return next();
+  } catch {
+    return next();
+  }
 };
 
+export const checkBlocked = (req, res, next) => {
+  if (req.user?.isBlocked) {
+    const reason = req.user.blockReason ? ` Sabab: ${req.user.blockReason}` : '';
+    return next(new ApiError(403, `Sizning akkauntingiz bloklangan.${reason}`));
+  }
+  return next();
+};
+
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return next(new ApiError(403, "Bu amalni bajarish uchun sizda ruxsat yo'q"));
+    }
+    return next();
+  };
+};
