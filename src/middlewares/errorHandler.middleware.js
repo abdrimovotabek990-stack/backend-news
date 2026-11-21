@@ -7,7 +7,7 @@ const errorHandler = (err, req, res, next) => {
     let message = err.message || 'Serverda xatolik yuz berdi';
     let errors = err.errors || [];
 
-    // 1. MULTER XATOLIKLARI
+  
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             statusCode = 413;
@@ -19,10 +19,10 @@ const errorHandler = (err, req, res, next) => {
             statusCode = 400;
             message = `Fayl yuklashda xatolik yuz berdi: ${err.message}`;
         }
-    } // <-- MANA SHU QAVS TUSHIB QOLGAN EDI (Multer bloki yopildi)
+    } 
 
 
-    // 2. JOI / MONGOOSE VALIDATSIYA XATOLIKLARI 
+
     if (err.name === 'ValidationError' || err.isJoi) {
         statusCode = 400;
         message = 'Ma\'lumotlarni tekshirishda xatolik yuz berdi';
@@ -40,7 +40,7 @@ const errorHandler = (err, req, res, next) => {
         }
     }
 
-    // 3. JWT XATOLIKLARI 
+
     if (err.name === 'JsonWebTokenError') {
         statusCode = 401;
         message = 'Token yaroqsiz, qayta kiring';
@@ -49,7 +49,7 @@ const errorHandler = (err, req, res, next) => {
         message = 'Token muddati tugagan yoki yaroqsiz, tizimga qaytadan kiring';
     }
 
-    // 4. MONGODB XATOLIKLARI
+
     if (err.name === 'CastError') { 
         statusCode = 400;
         message = `Noto'g'ri ${err.path} qiymati: ${err.value}`;
@@ -60,8 +60,6 @@ const errorHandler = (err, req, res, next) => {
         const field = Object.keys(err.keyValue)[0];
         message = `Ushbu ${field} qiymati allaqachon mavjud`;
     }
-
-    // 5. JAVOB QAYTARISH
     const isProduction = process.env.NODE_ENV === 'production';
 
     if (statusCode === 500) {
