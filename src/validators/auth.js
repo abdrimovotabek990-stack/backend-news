@@ -14,7 +14,7 @@ export const loginSchema = Joi.object({
 
 export const updateProfilSchema = Joi.object({
     newName: Joi.string().min(2).max(50).required(),
-    newEmail: Joi.string().email().required(),
+    newEmail: Joi.string().email(),
 }).or('newName', 'newEmail');
 
 export const changePasswordSchema = Joi.object({

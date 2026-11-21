@@ -7,7 +7,7 @@ import authRouter from './routes/auth.route.js'
 import categoryRouter from './routes/category.route.js'
 import tagsRouter from './routes/tag.route.js'
 import newsRouter from './routes/news.route.js'
-
+import AdminRuter from './routes/admin.route.js'
 
 import notFound from './middlewares/notFound.middleware.js'
 import errorHandler from './middlewares/errorHandler.middleware.js'
@@ -24,6 +24,7 @@ app.use('/', authRouter)
 app.use('/', categoryRouter)
 app.use('/', tagsRouter)
 app.use('/', newsRouter)
+app.use('/', AdminRuter)
 
 app.use(notFound)
 app.use(errorHandler)

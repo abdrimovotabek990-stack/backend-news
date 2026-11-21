@@ -1,29 +1,29 @@
 import express from 'express';
-import * as adminController from '../controllers/admin.controller.js';
+import { approveNews, blockUser, getAdminNews, getAdminStats, getAdminUsers, getAdminUsersNews, rejectNews, unblockUser } from '../controllers/admin.controller';
 
 const router = express.Router();
 
 //admin
-router.get('/api/admin/stats', adminController.getAdminStats)
-router.get('/api/admin/news', adminController.getAdminNews)
-router.patch('/api/admin/news/:id/approve', adminController.approveNews)
-router.patch('/api/admin/news/:id/reject', adminController.rejectNews)
+router.get('/api/admin/stats', getAdminStats)
+router.get('/api/admin/news', getAdminNews)
+router.patch('/api/admin/news/:id/approve', approveNews)
+router.patch('/api/admin/news/:id/reject', rejectNews)
 
 //admin users
-router.get('/api/admin/users', adminController.getAdminUsers)
-router.get('/api/admin/users/:id/news', adminController.getAdminUsersNews)
-router.patch('/api/admin/users/:id/block', adminController.blockUser)
-router.patch('/api/admin/users/:id/unblock', adminController.unblockUser)
+router.get('/api/admin/users', getAdminUsers)
+router.get('/api/admin/users/:id/news', getAdminUsersNews)
+router.patch('/api/admin/users/:id/block', blockUser)
+router.patch('/api/admin/users/:id/unblock', unblockUser)
 
 
 // admin kategoriya vs tegs
-router.post('/api/admin/categories', adminController.createCategory)
-router.patch('/api/admin/categories/:id', adminController.updateCategory)
-router.delete('/api/admin/categories/:id', adminController.deleteCategory)
+router.post('/api/admin/categories', )
+router.patch('/api/admin/categories/:id', updateCategory)
+router.delete('/api/admin/categories/:id', deleteCategory)
 
-router.post('/api/admin/tags', adminController.createTags)
-router.patch('/api/admin/tags/:id', adminController.updateTagsById)
-router.delete('/api/admin/tags/:id', adminController.deleteTagsById)
+router.post('/api/admin/tags', createTags)
+router.patch('/api/admin/tags/:id', updateTagsById)
+router.delete('/api/admin/tags/:id', deleteTagsById)
 
 
 export default router;  

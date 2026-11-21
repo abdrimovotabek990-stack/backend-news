@@ -1,10 +1,8 @@
-import slugify from 'slugify';
-import Category from "../models/categories.model";
-import News from "../models/news.model";
-import User from "../models/User.model";
-import ApiError from "../utils/ApiError.utils";
-import { asyncHandler } from "../utils/asyncHandler.utils";
-import Tag from '../models/tags.model';
+import Category from "../models/categories.model.js";
+import News from "../models/news.model.js";
+import User from "../models/User.model.js";
+import ApiError from "../utils/ApiError.utils.js";
+import { asyncHandler } from "../utils/asyncHandler.utils.js";
 
 
 // DASHBOARD 
