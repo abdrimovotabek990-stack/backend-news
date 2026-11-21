@@ -15,7 +15,7 @@ const newsSchema = new Schema ({
     description: {type: String, required: true, minlength: 20},
     slug: {type: String, required: true, unique: true, trim: true},
     images: {type: [imageSchema], default: [], validate: [arr => arr.length <= 10, '10 tagacha rasm yuklay olasz ']},
-    category: {type: Schema.Types.ObjectId, ref: 'Categories', required: true, index: true}, 
+    category: {type: Schema.Types.ObjectId, ref: 'Category', required: true, index: true}, 
     author: {type: Schema.Types.ObjectId, ref: 'Users', required: true, index: true},
     tags: {
         type: [{type: Schema.Types.ObjectId, ref: 'Tag', required: true}], 

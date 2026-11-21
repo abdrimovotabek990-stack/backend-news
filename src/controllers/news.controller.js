@@ -5,7 +5,7 @@ import News from '../models/news.model.js'
 
 import { deleteFiles, formatUploadedFiles } from "../services/file.service.js";
 import Category from '../models/categories.model.js';
-import sanitize from 'sanitize-html'
+import { sanitizeDescription, sanitizeTitle } from '../utils/sanitize.utils.js';
 
 
 export const createNews = async (req, res, next) => {

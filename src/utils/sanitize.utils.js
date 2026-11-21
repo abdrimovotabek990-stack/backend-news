@@ -1,6 +1,5 @@
 import sanitizeHtml from "sanitize-html";
 
-// Sarlavhadan barcha HTML teglarni to'liq olib tashlaydi
 export const sanitizeTitle = (title = "") => {
     return sanitizeHtml(title, {
         allowedTags: [],
@@ -8,7 +7,6 @@ export const sanitizeTitle = (title = "") => {
     }).trim();
 };
 
-// Yangilik matnidan zararli teg/skriptlarni tozalab, xavfsiz formatlash teglarini qoldiradi
 export const sanitizeDescription = (description = "") => {
     return sanitizeHtml(description, {
         allowedTags: [
