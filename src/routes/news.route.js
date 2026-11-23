@@ -7,11 +7,11 @@ import { parseNewsBody, uploadNewsImages } from '../middlewares/upload.middlewar
 const router = express.Router();
 
 
+router.post('/api/news',authenticate, checkBlocked, uploadNewsImages, parseNewsBody, createNews);
+router.patch('/api/news/:id', authenticate, checkBlocked, uploadNewsImages, updateNews);
 router.get('/api/news', getAllNews)
 router.get('/api/news/search', getNewsBySearch)
 router.get('/api/news/:slug', getNewsByslug)
-router.post('/api/news',authenticate, checkBlocked, uploadNewsImages, parseNewsBody, createNews);
-router.patch('/api/news/:id', updateNews)
 router.delete('/api/news/:id', deleteNews)
 
 export default router;  

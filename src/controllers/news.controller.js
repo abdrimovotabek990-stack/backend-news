@@ -5,7 +5,9 @@ import News from '../models/news.model.js'
 
 import { deleteFiles, formatUploadedFiles } from "../services/file.service.js";
 import Category from '../models/categories.model.js';
-import { sanitizeDescription, sanitizeTitle } from '../utils/sanitize.utils.js';
+import { parseArrayField, sanitizeDescription, sanitizeTitle,  } from '../utils/sanitize.utils.js';
+import ApiError from '../utils/ApiError.utils.js';
+import Tag from '../models/tags.model.js';
 
 
 export const createNews = async (req, res, next) => {
@@ -72,7 +74,6 @@ export const createNews = async (req, res, next) => {
         if (uploadImages.length > 0) {
             await deleteFiles(uploadImages);
         }
-
         res.status(500).json({
             success: false,
             message: error.message || 'Yangilik yaratishda xatolik yuz berdi'
@@ -82,10 +83,99 @@ export const createNews = async (req, res, next) => {
 
 
 export const updateNews = async (req, res) => {
+    const uploadImages = req.files || [];
     try {
-        
+        const { id } = req.params;
+        const {  title, description, category } = req.body;
+
+        const news = await News.findById(id)
+        if (!news) {
+            throw new ApiError(404, 'yangilik topilmadi');
+        }
+
+        const isAdmin = req.user.role === 'ADMIN'
+        const isOwner = news.author.toString() === req.user._id.toString()
+
+        if (!isAdmin && !isOwner) {
+            throw new ApiError(403, " Sizda bu yangilikni o'zgartirish uchun huquq yo'q ")
+        }
+
+        if (category !== undefined){
+            const categoryExist = await Category.findById(category)
+            if(!categoryExist) {
+                throw new ApiError(404, ' Categoriya topilmadi')
+            }
+            news.category = category
+        }
+
+        if (req.body.tags !== undefined){
+            const tags = [...new Set(parseArrayField(req.body.tags))]
+            if(tags.length > 10){
+                throw new ApiError(400, "Yangilikka ko'pi bilan 10 ta teg birlashtirish mumkin")
+            }   
+            if(tags.length > 0){
+                const existingTagsCount = await Tag.countDocuments({_id:{$in: tags}})
+                if(existingTagsCount !== tags.length){
+                   throw new ApiError(404, "Tanlangan teglar topilmadi")
+             }
+            }
+            news.tags = tags
+            }
+            if (title !== undefined){
+                news.title = sanitizeTitle(title)   
+            }
+            if (description !== undefined){
+                news.description = sanitizeDescription(description)
+            }
+
+            const removeImages = parseArrayField(req.body.removeImages)
+            const deleteImagesFromDisk = []
+
+            if(removeImages.length > 0){
+                news.images = news.images.filter((img) => {
+                    if(removeImages.includes(img.filename)){
+                        deleteImagesFromDisk.push(img.filename);
+                        return false;
+                    }
+                    return true;
+                })
+            }
+            const newImages = formatUploadedFiles(uploadImages)
+            if(news.images.length + newImages.length > 10){
+                throw new ApiError(400, "10 ta rasmgacha yuklay olasz")
+            }
+            news.images.push(...newImages)
+
+             if (!isAdmin && (news.status === "PUBLISHED" || news.status === "REJECTED")) {
+            news.status = "PENDING";
+            news.rejectReason = undefined;
+            news.reviewedBy = undefined;
+            news.reviewedAt = undefined;
+            news.publishedAt = undefined;
+            }
+
+            await news.save();
+
+            if (deleteImagesFromDisk.length > 0) {
+            await deleteFiles(deleteImagesFromDisk);
+            }
+
+            await news.populate([
+                { path: 'author', select: 'name' },
+                { path: 'category', select: 'name slug' },
+                { path: 'tags', select: 'name slug' }
+            ]);
+
+        res.status(201).json({
+            success: true,
+            message: isAdmin
+                ? "Yangilik yangilandi"
+                : "Yangilik o'zgartirildi va admin tekshiruviga yuborildi",
+            data: news
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Yangilik yangilashda xatolik yuz berdi' });
+        await deleteFiles(uploadImages);
+            throw error;
     }
 }
 
