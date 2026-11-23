@@ -182,12 +182,36 @@ export const updateNews = async (req, res) => {
 
 export const deleteNews = async (req, res) => {
     try {
+        const {id} = req.params
+
+        const news = await News.findById(id)
+        if(!news){
+            throw new ApiError(404, "Yanfilik topilmadi")
+        }
+
+        const isOwner = news.author.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === "ADMIN";
+        if(!isAdmin && !isOwner){
+            throw new ApiError(400, "Siz faqat o'zingiz yaratgan yangilikni o'chira olasz")
+        }
+        const deleteImages = [...news.images];   
+
+        await news.deleteOne()
+
+        if (deleteImages.length >0){
+            await deleteFiles(deleteImages)
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Yangilik o'chirildi"
+        })
 
     } catch (error) {
-        res.status(500).json({ message: 'Yangilikni o\'chirishda xatolik yuz berdi' });
+        throw error
     }
 }
-
+ 
 
 export const getAllNews = async (req, res) => {
     try {
