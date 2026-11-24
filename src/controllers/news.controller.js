@@ -215,7 +215,13 @@ export const deleteNews = async (req, res) => {
 
 export const getAllNews = async (req, res) => {
     try {
+        const allnews = await News.find().sort({ created: -1})
 
+        res.status(200).json({
+        success: true,
+        message: " Yangliklar ro'yhati ro'yhati",
+        data: allnews
+    })
     } catch (error) {
         res.status(500).json({ message: 'Yangiliklarni olishda xatolik yuz berdi' });
     }

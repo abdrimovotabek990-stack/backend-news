@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.post('/api/news',authenticate, checkBlocked, uploadNewsImages, parseNewsBody, createNews);
 router.patch('/api/news/:id', authenticate, checkBlocked, uploadNewsImages, updateNews);
-router.delete('/api/news/:id', authenticate, checkBlocked, deleteNews);
+router.delete('/api/news/:id',authenticate,checkBlocked, deleteNews)
 router.get('/api/news', getAllNews)
 router.get('/api/news/search', getNewsBySearch)
 router.get('/api/news/:slug', getNewsByslug)
