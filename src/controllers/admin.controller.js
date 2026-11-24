@@ -226,8 +226,8 @@ export const getAdminUsersNews = asyncHandler(async (req, res) => {
                 .populate('tags', 'name slug')
                 .sort(sortOptions)
                 .skip(skip)
-                .limit(limitNum),
-                lean(),
+                .limit(limitNum)
+                .lean(),
             News.countDocuments(filter)
         ]);
 
@@ -244,7 +244,7 @@ export const getAdminUsersNews = asyncHandler(async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: 'Foydalanuvchining yangiliklarini olishda xatolik yuz berdi' });
+       throw error
     }   
 })
 

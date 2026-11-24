@@ -8,6 +8,7 @@ import Category from '../models/categories.model.js';
 import { parseArrayField, sanitizeDescription, sanitizeTitle,  } from '../utils/sanitize.utils.js';
 import ApiError from '../utils/ApiError.utils.js';
 import Tag from '../models/tags.model.js';
+import { create } from 'domain';
 
 
 export const createNews = async (req, res, next) => {
@@ -186,7 +187,7 @@ export const deleteNews = async (req, res) => {
 
         const news = await News.findById(id)
         if(!news){
-            throw new ApiError(404, "Yanfilik topilmadi")
+            throw new ApiError(404, "Yangilik topilmadi")
         }
 
         const isOwner = news.author.toString() === req.user._id.toString();
@@ -227,6 +228,48 @@ export const getAllNews = async (req, res) => {
     }
 }
 
+
+export const getMyNews = async (req, res) => {
+    try {
+        const filter = {author: req.user._id}
+        
+        if(req.query.status && ['PENDING', 'PUBLISHED', 'REJECTED'].includes(req.query.status)){
+            filter.status = req.query.status
+        }
+
+        const tartiblash = req.query.sort === 'oldest' ? 1:-1 
+
+        const [myNews, total] = await Promise.all([
+            News.find(filter)
+            .sort({ createdAt: tartiblash})
+            .populate([
+                { path: 'author', select: 'name' },
+                { path: 'category', select: 'name slug' },
+                { path: 'tags', select: 'name slug' }
+            ]),
+            News.countDocuments(filter)
+        ])
+
+        const totalPage = Math.ceil(total)
+        
+        res.status(200).json({
+            success: true,
+            message: "Shaxsiy yangiliklaringiz olindi",
+            data: myNews
+        })  
+    } catch (error) {
+        throw error
+    }
+}
+
+export const getNewsByslug = async (req, res) => {
+    try {
+        
+    }catch (error) {
+        res.status(500).json({ message: 'Yangilikni olishda xatolik yuz berdi' });
+    }
+}
+
 export const getNewsBySearch = async (req, res) => {
     try {
 
@@ -234,20 +277,3 @@ export const getNewsBySearch = async (req, res) => {
         res.status(500).json({ message: 'Yangilikni olishda xatolik yuz berdi' });
     }
 }
-
-export const getMyNews = async (req, res) => {
-    try {
-
-    } catch (error) {
-        res.status(500).json({ message: 'Yaratgan yangiliklaringizni olishda xatolik yuz berdi' });
-    }
-}
-
-export const getNewsByslug = async (req, res) => {
-    try {
-
-    }catch (error) {
-        res.status(500).json({ message: 'Yangilikni olishda xatolik yuz berdi' });
-    }
-}
-
