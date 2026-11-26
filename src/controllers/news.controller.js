@@ -210,7 +210,48 @@ export const deleteNews = async (req, res) => {
         throw error
     }
 }
- 
+
+export const deleteImages = async(req, res) => {
+    try {
+        const {id} = req.params
+        const {removeImages} = req.body
+
+        const news = await News.findById(id)
+        if(!news){
+            throw new ApiError(404, "Yangilik topilmadi")
+        }
+
+        const isOwner = news.author.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === "ADMIN";
+        if(!isAdmin && !isOwner){
+            throw new ApiError(400, "Siz faqat o'zingiz yaratgan yangilikni o'chira olasz")
+        }
+        const deleteImg = news.images.filter((img) => 
+            removeImages.includes(img.filename)
+        )
+        // console.log(deleteImg);
+        
+        if (deleteImg.length === 0){
+            throw new ApiError(404, "Rasmlar topilmadi")
+        }
+        // *
+        news.images = news.images.filter(
+            (img) => !removeImages.includes(img.filename)
+        ); //
+        await news.save()
+        // console.log(news);
+        
+        await deleteFiles(deleteImg)
+
+        res.status(200).json({
+            success: true,
+            message: "Rasmlar o'chirildi",
+            data: news.images
+        })
+    } catch (error) {
+        throw error
+    }
+}
 
 export const getAllNews = async (req, res) => {
     try {   
@@ -300,7 +341,7 @@ export const getNewsByslug = async (req, res) => {
 // *
 export const getNewsBySearch = async (req, res) => {
     try {
-        const { matn, category, tag, sort, page, limit } = req.query;
+        const { matn, tag, sort, page, limit } = req.query;
 
         const pageNum = Math.max(1, parseInt(page, 10) || 1);
         const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
@@ -310,23 +351,6 @@ export const getNewsBySearch = async (req, res) => {
 
         if (matn && matn.trim()) {
             filter.$text = { $search: matn.trim() };
-        }
-
-        if (category) {
-            const categoryDoc = await Category.findOne({ slug: category }).select('_id');
-            if (!categoryDoc) {
-                return res.status(200).json({
-                    success: true,
-                    data: [],
-                    meta: {
-                        page: pageNum,
-                        limit: limitNum,
-                        total: 0,
-                        totalPages: 0,
-                    },
-                });
-            }
-            filter.category = categoryDoc._id;
         }
 
         if (tag) {
