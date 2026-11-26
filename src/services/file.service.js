@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-
+// ***
 const UPLOAD_NEWS_DIR = path.resolve(process.env.UPLOAD_DIR || "uploads", "news");
 
 export const formatUploadedFiles = (files = []) => {

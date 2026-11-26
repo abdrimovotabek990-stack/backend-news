@@ -1,7 +1,7 @@
 import multer from 'multer';
 
 const errorHandler = (err, req, res, next) => {
-    console.log("2. errorHandler xatoni qabul qildi!");
+    // console.log("2. errorHandler xatoni qabul qildi!");
     
     let statusCode = err.statusCode || 500;
     let message = err.message || 'Serverda xatolik yuz berdi';
@@ -22,7 +22,7 @@ const errorHandler = (err, req, res, next) => {
     } 
 
 
-
+// * 
     if (err.name === 'ValidationError' || err.isJoi) {
         statusCode = 400;
         message = 'Ma\'lumotlarni tekshirishda xatolik yuz berdi';

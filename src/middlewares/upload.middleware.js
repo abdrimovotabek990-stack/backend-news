@@ -3,7 +3,7 @@ import multer from "multer";
 import { fileTypeFromFile } from "file-type";
 import { uploadNewsMulter } from "../config/multer.js";
 import ApiError from "../utils/ApiError.utils.js";
-
+// ***
 const ALLOWED_MAGIC_MIMES = new Set([
     "image/jpeg",
     "image/png",

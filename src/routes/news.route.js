@@ -15,4 +15,4 @@ router.get('/api/news/my',authenticate, getMyNews)
 router.get('/api/news/search', getNewsBySearch)
 router.get('/api/news/:slug', getNewsByslug)
 
-export default router;  
+export default router;      

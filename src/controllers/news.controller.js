@@ -229,13 +229,14 @@ export const getAllNews = async (req, res) => {
 
 export const getMyNews = async (req, res) => {
     try {
+        
         const filter = {author: req.user._id}
         
         if(req.query.status && ['PENDING', 'PUBLISHED', 'REJECTED'].includes(req.query.status)){
             filter.status = req.query.status
         }
 
-        const tartiblash = req.query.sort === 'oldest' -1 
+        const tartiblash = req.query.sort === 'oldest' ? 1 : -1;
 
         const myNews = await Promise.all([ 
             News.find(filter)
@@ -296,12 +297,82 @@ export const getNewsByslug = async (req, res) => {
         res.status(500).json({ message: 'Yangilikni olishda xatolik yuz berdi' });
     }
 }
-
+// *
 export const getNewsBySearch = async (req, res) => {
     try {
-        
-    } catch (error) {
-        res.status(500).json({ message: 'Yangilikni olishda xatolik yuz berdi' });
-    }
-}
+        const { matn, category, tag, sort, page, limit } = req.query;
 
+        const pageNum = Math.max(1, parseInt(page, 10) || 1);
+        const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+        const skip = (pageNum - 1) * limitNum;
+
+        const filter = { status: "PUBLISHED" };
+
+        if (matn && matn.trim()) {
+            filter.$text = { $search: matn.trim() };
+        }
+
+        if (category) {
+            const categoryDoc = await Category.findOne({ slug: category }).select('_id');
+            if (!categoryDoc) {
+                return res.status(200).json({
+                    success: true,
+                    data: [],
+                    meta: {
+                        page: pageNum,
+                        limit: limitNum,
+                        total: 0,
+                        totalPages: 0,
+                    },
+                });
+            }
+            filter.category = categoryDoc._id;
+        }
+
+        if (tag) {
+            const tagDoc = await Tag.findOne({ slug: tag }).select('_id');
+            if (!tagDoc) {
+                return res.status(200).json({
+                    success: true,
+                    data: [],
+                    meta: {
+                        page: pageNum,
+                        limit: limitNum,
+                        total: 0,
+                        totalPages: 0,
+                    },
+                });
+            }
+            filter.tags = tagDoc._id;
+        }
+
+        const sortOption = sort === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
+
+        const [news, total] = await Promise.all([
+            News.find(filter)
+                .populate('author', 'name')
+                .populate('category', 'name slug')
+                .populate('tags', 'name slug')
+                .sort(sortOption)
+                .skip(skip)
+                .limit(limitNum)
+                .lean(),
+            News.countDocuments(filter),
+        ]);
+
+        const totalPages = Math.ceil(total / limitNum);
+
+        return res.status(200).json({
+            success: true,
+            data: news,
+            meta: {
+                page: pageNum,
+                limit: limitNum,
+                total,
+                totalPages,
+            },
+        });
+    } catch (error) {
+        throw error;
+    }
+};
