@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+
 import slugify from 'slugify'
 import News from '../models/news.model.js'
 
@@ -8,7 +7,6 @@ import Category from '../models/categories.model.js';
 import { parseArrayField, sanitizeDescription, sanitizeTitle,  } from '../utils/sanitize.utils.js';
 import ApiError from '../utils/ApiError.utils.js';
 import Tag from '../models/tags.model.js';
-import { create } from 'domain';
 
 
 export const createNews = async (req, res, next) => {
@@ -215,7 +213,7 @@ export const deleteNews = async (req, res) => {
  
 
 export const getAllNews = async (req, res) => {
-    try {
+    try {   
         const allnews = await News.find().sort({ created: -1})
 
         res.status(200).json({
@@ -237,9 +235,9 @@ export const getMyNews = async (req, res) => {
             filter.status = req.query.status
         }
 
-        const tartiblash = req.query.sort === 'oldest' ? 1:-1 
+        const tartiblash = req.query.sort === 'oldest' -1 
 
-        const [myNews, total] = await Promise.all([
+        const myNews = await Promise.all([ 
             News.find(filter)
             .sort({ createdAt: tartiblash})
             .populate([
@@ -250,7 +248,6 @@ export const getMyNews = async (req, res) => {
             News.countDocuments(filter)
         ])
 
-        const totalPage = Math.ceil(total)
         
         res.status(200).json({
             success: true,
@@ -264,7 +261,37 @@ export const getMyNews = async (req, res) => {
 
 export const getNewsByslug = async (req, res) => {
     try {
-        
+        const  {slug} = req.params
+
+        const news = await News.findOne({slug})
+        .populate('author', 'name')
+        .populate('category', 'name slug')
+        .populate('tags', 'name slug')
+
+        if(!news){
+            return res.status(404).json({
+                success: false,
+                message: "Yangilik topilmadi"
+            })
+        }
+
+        if (news.status !== 'PUBLISHED') {
+            const isAdmin = req.user?.role === 'ADMIN';
+            const isAuthor =
+                req.user && news.author._id.toString() === req.user._id.toString();
+
+            if (!isAdmin && !isAuthor) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Yangilik topilmadi'
+                });
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            data: news
+        });
     }catch (error) {
         res.status(500).json({ message: 'Yangilikni olishda xatolik yuz berdi' });
     }
@@ -272,8 +299,9 @@ export const getNewsByslug = async (req, res) => {
 
 export const getNewsBySearch = async (req, res) => {
     try {
-
+        
     } catch (error) {
         res.status(500).json({ message: 'Yangilikni olishda xatolik yuz berdi' });
     }
 }
+

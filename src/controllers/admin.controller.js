@@ -116,7 +116,7 @@ export const approveNews = asyncHandler(async (req, res) => {
             data: news
         });
     } catch (error) {
-        res.status(500).json({ message: 'Yangilikni tasdiqlashda xatolik yuz berdi' });
+        throw error
     }
 })
 
@@ -145,7 +145,7 @@ export const rejectNews = asyncHandler(async (req, res) => {
         })
 
     } catch (error) {
-        res.status(500).json({ message: 'Yangilikni rad etishda xatolik yuz berdi' });
+        throw error
     }
 })
 
@@ -250,13 +250,13 @@ export const getAdminUsersNews = asyncHandler(async (req, res) => {
 
 
 // USERLARNI BLOKLASH VA BLOKDAN CHIQARISH
-export const blockUser =asyncHandler (async (req, res) => {
+export const blockUser = asyncHandler(async (req, res) => {
     try {
         const { id } = req.params;
         const {reason} = req.body;
 
         if (req.user._id.toString() === id) {
-            throw new ApiError(400, 'Admin o\'zini o\'zi bloklay olmaydi');
+            throw new ApiError(400, "Admin o'zini o'zi bloklay olmaydi");
         }
 
         const user = await User.findById(id);
@@ -296,9 +296,9 @@ export const blockUser =asyncHandler (async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: 'Foydalanuvchini bloklashda xatolik yuz berdi' });
+       throw error
     }   
-})
+}) 
 
 export const unblockUser = asyncHandler(async (req, res) => {
     try {
@@ -332,7 +332,7 @@ export const unblockUser = asyncHandler(async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: 'Foydalanuvchini blokdan chiqarishda xatolik yuz berdi' });
+        throw error
     }
 })
 
